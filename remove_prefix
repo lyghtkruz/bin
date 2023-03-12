@@ -1,0 +1,14 @@
+#!/bin/bash
+
+PREFIX=$1 
+
+if [[ -z ${PREFIX} ]]; then
+	echo "Usage: remove_prefix pre_fix"
+	echo ""
+	exit 0
+fi
+
+for file in ${PREFIX}*
+do 
+	mv "${file}" -i "${file#${PREFIX}}"; 
+done
