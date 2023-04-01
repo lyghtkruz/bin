@@ -1,0 +1,124 @@
+#!/bin/bash
+
+# We'll try to automatically grab the location of ffmpeg
+
+# ---- User configurable settings ----
+
+BC=  # bc binary location
+DATE= # date binary location
+PF=  # printf binary location
+FFM=  # ffmpeg binary location
+FFM_OPTS="-loglevel error -n -vcodec copy -an -async 1" # ffmpeg flags/options
+
+OUT="out"  # Output file names
+
+####################################################################
+
+# DO NOT MODIFY BELOW THIS LINE (Unless you know what you are doing)
+
+####################################################################
+
+FNAME=$1
+SNAME=$2
+SCOUNT=$3
+EXT="${FNAME##*.}"
+
+function usage() {
+    echo "Usage: cutloop <filename> <timestamp> <loop_start_count>"
+    echo "eg. cutloop myfile timestamps 4"
+    exit
+}
+
+function requirements() {
+    echo -e "ERROR: cutloop requires the binaries\n\tbc\n\tdate\n\tffmpeg\n\tprintf\n"
+    exit
+}
+
+# Checking for specific binary requirements
+
+if [ -z ${BC} ]; then
+    BC=$(which bc)
+    if [ $? != 0 ]; then
+        requirements
+    fi
+fi
+
+if [ -z ${DATE} ]; then
+    DATE=$(which date)
+    if [ $? != 0 ]; then
+        requirements
+    fi
+fi
+
+if [ -z ${PF} ]; then
+    PF=$(which printf)
+    if [ $? != 0 ]; then
+        requirements
+    fi
+fi
+
+if [ -z ${FFM} ]; then
+    FFM=$(which ffmpeg)
+    if [ $? != 0 ]; then
+        requirements
+    fi
+fi
+
+# Checking for parameters
+
+if [ -z $FNAME ]; then
+    usage
+fi
+
+if [ ! -f "$FNAME" ]; then
+    echo "Error: File ${FNAME} does not exist"
+    exit
+fi
+
+if [ -z $SNAME ]; then
+    usage
+fi
+
+if [ ! -f "$SNAME" ]; then
+    echo "Error: File ${SNAME} does not exist"
+    exit
+fi
+
+# Starting count at 0
+if [ -z $SCOUNT ]; then
+    SCOUNT=0
+fi
+
+function timestamp() {
+    $DATE '+%s' --date="$1";
+}
+
+# Start/Stop time array
+STR=()
+STP=()
+
+while read -r a b
+do
+    START=$(timestamp $a)
+    END=$(timestamp $b)
+    secs=$(echo $END - $START | $BC)
+    CUTAT=$($PF '%02d:%02d:%02d' $((secs/3600)) $((secs%3600/60)) $((secs%60)))
+    STR+=($a)
+    STP+=($CUTAT)
+done < $SNAME
+
+LOOPER=${#STR[@]}
+for ((i=0; i<$LOOPER; i++))
+do
+    LCOUNT=$($PF '%02d' $SCOUNT)
+
+    # export DEBUG=true # to get printout
+    # the race condition/redirect issue should be fixed, but this is just in case
+    if [ "$DEBUG" = "true" ]; then
+        echo "${FFM} ${FFM_OPTS} -i ${FNAME} -ss ${STR[$i]} -t ${STP[$i]} ${OUT}${LCOUNT}.${EXT}"
+    else
+        echo " - running FFMPEG"
+        ${FFM} ${FFM_OPTS} -i ${FNAME} -ss ${STR[$i]} -t ${STP[$i]} ${OUT}${LCOUNT}.${EXT}
+    fi
+    let SCOUNT+=1
+done
