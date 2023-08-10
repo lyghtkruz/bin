@@ -1,0 +1,10 @@
+#!/bin/bash
+
+. config/mc.config
+# mc.config has 3 variables: 
+#  SAVE_DIR - path to saves directory eg. SAVEDIR=/home/kruz/games/minecraft/saves/
+#  BACKUP_DIR - path to backup the files eg. /mnt/backups/minecraft/
+#  WORLD_NAME - name of world eg. WORLD_NAME="New World"
+
+echo $WORLD_NAME
+rsync -avP "${BACKUP_DIR}/${WORLD_NAME}/" "${SAVE_DIR}/$WORLD_NAME/" 
