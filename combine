@@ -1,0 +1,67 @@
+#!/bin/bash
+
+# We'll try to automatically grab the location of ffmpeg
+
+# ---- User configurable settings ----
+
+FFM=  # ffmpeg binary location
+# options not in use yet
+# FFM_OPTS="-loglevel error -n -vcodec copy -an -async 1" # ffmpeg flags/options
+
+####################################################################
+
+# DO NOT MODIFY BELOW THIS LINE (Unless you know what you are doing)
+
+####################################################################
+
+function requirements {
+    echo "Requires FFMPEG"
+    exit
+}
+
+FFM=$(which ffmpeg)
+
+PARAM=$1
+FNAME=$2
+
+# Make sure we're being passed an extension
+if [ -z ${PARAM} ]; then
+    echo "Error: Please provide extension for the files to combine."
+    echo "Usage: combine <avi|mp3|mp4|wav> (output_name)"
+    exit
+fi
+
+
+CWD=$(pwd)
+TMPFILE=$(mktemp -p ${CWD})
+
+function clean_up {
+    rm -rf ${TMPFILE}
+}
+
+trap clean_up EXIT
+
+# create a list of files
+for f in ./*.${PARAM}; do
+   echo "file '${f}'" >> ${TMPFILE}
+done
+
+COUNT=$(wc -l ${TMPFILE})
+
+# *.blah seems to leave a single line if there are no files,
+# let's fix the "error"... can't combine a single file
+
+if [[ ${COUNT} -lt 2 ]]; then
+    rm -fv ${TMPFILE}
+    echo "Too few files of type ${PARAM}.  Combine requires 2 or more: "
+    ls -l ./*.${PARAM}
+    exit
+fi
+
+# If No name, Set a unique name based on the date and epoch
+if [ -z ${FNAME} ]; then
+    FNAME=$(date +%Y%m%d-%s).${PARAM}
+    echo "Filename not specified, default: ${FNAME}"
+fi
+
+$FFM -f concat -safe 0 -i ${TMPFILE} -c copy ${FNAME}

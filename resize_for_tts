@@ -1,0 +1,33 @@
+#!/bin/bash
+
+SAVEDIR=resized/
+
+PREFIX=$1
+WIDTH=$2
+HEIGHT=$3
+BGCOLOR=$4
+
+if [[ -z ${PREFIX} ]]; then
+	echo "Usage: resize_for_tts filename_prefix new_width new_height"
+	echo ""
+	exit 0
+fi
+
+if [[ -z ${WIDTH} ]]; then
+    echo "Usage: resize_for_tts filename_prefix new_width new_height"
+	echo ""
+	exit 0
+fi
+
+if [[ -z ${HEIGHT} ]]; then
+    echo "Usage: resize_for_tts filename_prefix new_width new_height"
+	echo ""
+	exit 0
+fi
+
+if [[ ! -d ${SAVEDIR} ]]; then
+    mkdir "${SAVEDIR}"
+fi
+
+exit 0
+ls -1 ${PREFIX}* | while read FN; do convert "${FN}" -resize ${WIDTH}x${HEIGHT} -gravity center -background ${BGCOLOR} -extent ${WIDTH}x${HEIGHT} "resized/${FN}" ; done

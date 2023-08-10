@@ -1,0 +1,5 @@
+#!/bin/bash
+
+PREFIX=$1
+
+mediainfo ${PREFIX}* | grep -P 'Width|Height' | sort | uniq -c
