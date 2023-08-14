@@ -1,6 +1,11 @@
 #!/bin/bash
 
-. config/mc.config
+if [ ! -f $HOME/bin/config/mc.config ]; then
+	echo "Error: There is no ${HOME}/bin/config/mc.config file!"
+	exit
+fi
+
+. $HOME/bin/config/mc.config
 # mc.config has 3 variables: 
 #  SAVE_DIR - path to saves directory eg. SAVEDIR=/home/kruz/games/minecraft/saves/
 #  BACKUP_DIR - path to backup the files eg. /mnt/backups/minecraft/
@@ -8,4 +13,4 @@
 
 echo $WORLD_NAME
 rsync -avP "${SAVE_DIR}/$WORLD_NAME/" "${BACKUP_DIR}/${WORLD_NAME}/"
-zip ${BACKUP_DIR}/${WORLD_NAME}-$(date +"%Y%m%d%H%M%S").zip "${BACKUP_DIR}/${WORLD_NAME}"
+zip -r ${BACKUP_DIR}/${WORLD_NAME}-$(date +"%Y%m%d%H%M%S").zip "${BACKUP_DIR}/${WORLD_NAME}"
