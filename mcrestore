@@ -1,10 +1,32 @@
 #!/bin/bash
 
-. config/mc.config
+MCPATH=${HOME}/bin/config/mc.config
+
+if [ ! -f ${MCPATH} ]; then
+	echo "Error: There is no ${MCPATH} file!"
+	exit
+fi
+
+. ${MCPATH}
 # mc.config has 3 variables: 
 #  SAVE_DIR - path to saves directory eg. SAVEDIR=/home/kruz/games/minecraft/saves/
 #  BACKUP_DIR - path to backup the files eg. /mnt/backups/minecraft/
 #  WORLD_NAME - name of world eg. WORLD_NAME="New World"
 
-echo $WORLD_NAME
+if [ -z "${SAVE_DIR}" ]; then
+	echo "SAVE_DIR variable not configured in ${MCPATH}"
+	exit
+fi
+
+if [ -z "${BACKUP_DIR}" ]; then
+	echo "BACKUP_DIR variable not configured in ${MCPATH}"
+	exit
+fi
+
+if [ -z "${WORLD_NAME}" ]; then
+	echo "WORLD_NAME variable not configured in ${MCPATH}"
+	exit
+fi
+
+echo "Restoring $WORLD_NAME from the latest save directory..."
 rsync -avP "${BACKUP_DIR}/${WORLD_NAME}/" "${SAVE_DIR}/$WORLD_NAME/" 
