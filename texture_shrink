@@ -1,0 +1,25 @@
+#!/bin/bash
+
+FILENAME=$1
+WIDTH=$2
+
+if [[ -z ${FILENAME} ]]; then
+	echo "Usage: texture_shrink filename new_width"
+	echo ""
+	exit 0
+fi
+
+if [[ -z ${WIDTH} ]]; then
+	echo "Usage: texture_shrink filename new_width"
+	echo ""
+	exit 0
+fi
+
+
+if [[ ! -f "${FILENAME}" ]]; then
+	echo "Error: There is no file: ${FILENAME}"
+	echo ""
+	exit 0
+fi
+
+convert "${FILENAME}" -resize ${WIDTH}x${WIDTH} -gravity center -background none  -extent ${WIDTH}x${HEIGHT} "${FILENAME}"

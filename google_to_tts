@@ -1,0 +1,14 @@
+#!/bin/bash 
+
+DOWNLOAD_URL="https://drive.google.com/uc?export=download&id="
+
+if [ -z "$1" ] ; then
+	echo "Please put URLs in a file"
+	exit 1;
+fi
+
+cat $1 | while read FILE_URL;
+do
+	FID=$(echo $FILE_URL | awk -F 'file/d/' '{print $2}' | cut -d/ -f1)
+	echo ${DOWNLOAD_URL}${FID}
+done
